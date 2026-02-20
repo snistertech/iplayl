@@ -1,0 +1,333 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iPlay Kiosk | Android + ESP32 Coin Kiosk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a1222;
+      --bg-soft: #101b30;
+      --card: #13233f;
+      --text: #e8f0ff;
+      --muted: #9eb3d1;
+      --accent: #2fd3b5;
+      --accent-2: #3f8cff;
+      --danger: #ff6b7a;
+      --border: rgba(232, 240, 255, 0.12);
+      --shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Manrope", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% -10%, #1f3b78 0%, transparent 40%),
+        radial-gradient(circle at 100% 0%, #0f5a74 0%, transparent 32%),
+        linear-gradient(155deg, var(--bg) 0%, #070d1a 100%);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      width: min(1160px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      gap: 16px;
+    }
+
+    .brand {
+      font-family: "Sora", sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      font-size: 1.1rem;
+    }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 10px 16px;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.92rem;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+    .btn.ghost { border-color: var(--border); background: rgba(255, 255, 255, 0.02); }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 22px;
+      padding: 28px 0 16px;
+    }
+
+    .panel {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy {
+      padding: 34px;
+    }
+
+    h1, h2, h3 { font-family: "Sora", sans-serif; margin: 0; }
+
+    h1 {
+      font-size: clamp(2rem, 4.1vw, 3.25rem);
+      line-height: 1.06;
+      margin-bottom: 14px;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.7;
+      margin-bottom: 22px;
+      max-width: 62ch;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .hero-stats {
+      padding: 22px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .stat {
+      border: 1px solid var(--border);
+      background: rgba(6, 14, 28, 0.45);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .stat .k {
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin-bottom: 5px;
+    }
+
+    .stat .v {
+      font-weight: 800;
+      font-family: "Sora", sans-serif;
+      font-size: 1.05rem;
+    }
+
+    section { padding: 28px 0; }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 70ch;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01));
+      border-radius: 16px;
+      padding: 16px;
+      min-height: 164px;
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.62;
+      font-size: 0.94rem;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #071327;
+      background: linear-gradient(135deg, var(--accent), #8cf6e0);
+      padding: 5px 9px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .step {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(9, 21, 41, 0.58);
+      padding: 14px;
+    }
+
+    .step .n {
+      font-family: "Sora", sans-serif;
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      margin-top: 18px;
+      padding: 18px 0 24px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .warn { color: var(--danger); font-weight: 700; }
+
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 620px) {
+      .wrap { width: min(1160px, calc(100% - 20px)); }
+      .hero-copy { padding: 20px; }
+      .hero-stats { padding: 14px; }
+      .grid { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="brand">iPlay Kiosk</div>
+      <div class="cta-row">
+        <a class="btn ghost" href="https://facebook.com/nielmarbagay05">Contact</a>
+        <a class="btn primary" href="https://github.com/snistertech/iplay-release/archive/refs/heads/main.zip">Download</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <article class="panel hero-copy">
+          <h1>Android Kiosk + ESP32 Coin System</h1>
+          <p class="lead">
+            iPlay Kiosk runs offline and combines a Device Owner Android portal with ESP32 BLE firmware for coin pulse input,
+            strict kiosk locking, admin configuration, app whitelist, and trial or paid license activation.
+          </p>
+          <div class="cta-row">
+            <a class="btn primary" href="https://github.com/snistertech/iplay-release/archive/refs/heads/main.zip">Get Build</a>
+            <a class="btn ghost" href="https://github.com/snistertech/iplay-release">View Source</a>
+          </div>
+        </article>
+        <aside class="panel hero-stats">
+          <div class="stat"><div class="k">Platform</div><div class="v">Android Kiosk Portal + ESP32 BLE Module</div></div>
+          <div class="stat"><div class="k">Trial Mode</div><div class="v">FREE30MIN (30 min, one-time claim per ESP32)</div></div>
+          <div class="stat"><div class="k">License</div><div class="v">Paid key = permanent, Trial key = time-limited</div></div>
+          <div class="stat"><div class="k">Connectivity</div><div class="v">Local BLE, no internet required</div></div>
+        </aside>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Matched Features</h2>
+          <p>These match the current kiosk app + ESP32 firmware behavior.</p>
+        </div>
+        <div class="grid">
+          <article class="card"><span class="badge">Portal</span><h3>Coin Time Session</h3><p>Insert coin dialog, pulse-to-minutes conversion, remaining time timer, and session disconnect flow.</p></article>
+          <article class="card"><span class="badge">Admin</span><h3>Always Access Admin Panel</h3><p>Admin password entry works even when kiosk is locked; maintenance mode defaults enabled on fresh Device Owner setup.</p></article>
+          <article class="card"><span class="badge">Security</span><h3>Kiosk Lock Controls</h3><p>Lock task mode, home/back/recents restrictions, overlay lock, and foreground reopening to keep kiosk in control.</p></article>
+          <article class="card"><span class="badge">BLE</span><h3>ESP32 Binding</h3><p>Scan and bind exact iPlay firmware by service UUID/name with bound device tracking and manual unbind.</p></article>
+          <article class="card"><span class="badge">License</span><h3>Trial + Paid Modes</h3><p>Paid license binds permanently; trial claim uses key validation and expiration handling with automatic unbind on expiry.</p></article>
+          <article class="card"><span class="badge">Whitelist</span><h3>Allowed App Launcher</h3><p>Select launchable apps from admin whitelist and open only approved apps while kiosk policy is enforced.</p></article>
+          <article class="card"><span class="badge">Audio</span><h3>Insert Coin & Time-Left Sound</h3><p>Upload custom insert-coin sound and choose male/female voice alert for remaining time warnings.</p></article>
+          <article class="card"><span class="badge">Stats</span><h3>Income Dashboard</h3><p>Daily, weekly, monthly, and yearly coin totals with custom currency code in admin dashboard.</p></article>
+          <article class="card"><span class="badge">Firmware</span><h3>Pulse Filter Tuning</h3><p>ESP32 supports debounce, minimum pulse width, coin gap timeout, and noise lockout updates from Android.</p></article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Recommended Extra Features</h2>
+          <p>High-value upgrades that fit your current architecture.</p>
+        </div>
+        <div class="grid">
+          <article class="card"><h3>Signed Firmware Handshake</h3><p>Add a challenge-response token so only approved iPlay firmware can accept binding/trial commands.</p></article>
+          <article class="card"><h3>Provisioning Export/Import</h3><p>Backup admin settings and restore to new devices via encrypted local file to speed deployment.</p></article>
+          <article class="card"><h3>Local Audit Log</h3><p>Store immutable logs for bind/unbind, trial claim, settings changes, and lock state transitions for support diagnostics.</p></article>
+          <article class="card"><h3>Dual-Module Failover</h3><p>Allow optional backup ESP32 mapping to reduce downtime when one module fails.</p></article>
+          <article class="card"><h3>Auto Test Utility</h3><p>Add admin test actions for simulated pulses and BLE health checks before going live in each kiosk unit.</p></article>
+          <article class="card"><h3>QR Config Profiles</h3><p>Generate local QR profiles for kiosk rates, restrictions, and app whitelist to simplify setup.</p></article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Operational Flow</h2>
+          <p>How your kiosk currently works end-to-end.</p>
+        </div>
+        <div class="flow">
+          <div class="step"><div class="n">STEP 1</div>Provision device as Device Owner and launch iPlay Kiosk portal.</div>
+          <div class="step"><div class="n">STEP 2</div>Open admin panel, scan BLE, and bind matching iPlay ESP32 firmware.</div>
+          <div class="step"><div class="n">STEP 3</div>Activate paid key permanently or claim trial key for 30-minute session.</div>
+          <div class="step"><div class="n">STEP 4</div>Run portal with whitelist + lock policies while ESP32 reports coin pulses.</div>
+        </div>
+      </section>
+
+      <section class="panel" style="padding:16px 18px; margin-top:6px;">
+        <h3 style="margin-bottom:8px;">Important</h3>
+        <p style="margin:0; color:var(--muted); line-height:1.6;">
+          Your setup is intentionally offline. This is practical for kiosk operation, but advanced users with root-level access can still tamper at OS level.
+          <span class="warn">For production, keep Device Owner policy enforced and physical access controlled.</span>
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <span>© 2026 iPlay Kiosk</span>
+      <span>Built for Android kiosk rental + ESP32 BLE coin acceptor workflow</span>
+    </footer>
+  </div>
+</body>
+</html>
